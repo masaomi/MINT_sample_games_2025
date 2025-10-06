@@ -297,6 +297,59 @@
             flex-wrap: wrap;
         }
 
+        .mobile-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .mobile-controls-label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .mobile-controls-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            font-size: 2em;
+            border: 3px solid #1e3c72;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            color: #1e3c72;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .control-btn:active:not(:disabled) {
+            transform: scale(0.95);
+            background: #e3f2fd;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
         button {
             padding: 12px 20px;
             font-size: 1em;
@@ -478,6 +531,15 @@
                     <button class="btn-pause" id="pauseBtn" onclick="togglePause()">⏸️ Pause</button>
                     <button class="btn-hint" onclick="showHint()">💡 Hint</button>
                 </div>
+
+                <div class="mobile-controls">
+                    <div class="mobile-controls-label">📱 Touch Controls</div>
+                    <div class="mobile-controls-row">
+                        <button class="control-btn" id="leftBtn" ontouchstart="handleTouchControl('left')" onclick="handleControl('left')">⬅️</button>
+                        <button class="control-btn" id="downBtn" ontouchstart="handleTouchControl('down')" onclick="handleControl('down')">⬇️</button>
+                        <button class="control-btn" id="rightBtn" ontouchstart="handleTouchControl('right')" onclick="handleControl('right')">➡️</button>
+                    </div>
+                </div>
             </div>
 
             <div class="side-panel">
@@ -647,6 +709,7 @@
 
             updateDisplay();
             updateStatus('playing');
+            updateControlButtons();
             document.getElementById('pauseBtn').disabled = false;
             document.getElementById('pauseBtn').innerHTML = '⏸️ Pause';
             showMessage('Use ←→ to move, ↓ for fast drop!', 'info');
@@ -687,6 +750,9 @@
             } else {
                 document.getElementById('nextRead').innerHTML = '<p style="text-align: center; color: #999; font-size: 0.9em;">Last Read</p>';
             }
+
+            // Update control buttons
+            updateControlButtons();
 
             // Start falling
             startFalling();
@@ -767,6 +833,52 @@
             }
         });
 
+        // Handle touch control (prevent default and handle immediately)
+        function handleTouchControl(direction) {
+            event.preventDefault();
+            handleControl(direction);
+        }
+
+        // Handle control button clicks
+        function handleControl(direction) {
+            if (!fallingRead || !gameRunning || gamePaused) return;
+
+            switch(direction) {
+                case 'left':
+                    if (fallingRead.x > 0) {
+                        fallingRead.x--;
+                        updateReadPosition();
+                    }
+                    break;
+                case 'right':
+                    const maxX = targetSequence.length - fallingRead.read.sequence.length;
+                    if (fallingRead.x < maxX) {
+                        fallingRead.x++;
+                        updateReadPosition();
+                    }
+                    break;
+                case 'down':
+                    // Fast drop
+                    if (fallInterval) clearInterval(fallInterval);
+                    fallingRead.speed = 50;
+                    startFalling();
+                    break;
+            }
+        }
+
+        // Update control buttons state
+        function updateControlButtons() {
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+            const downBtn = document.getElementById('downBtn');
+            
+            const enabled = fallingRead && gameRunning && !gamePaused;
+            
+            leftBtn.disabled = !enabled;
+            rightBtn.disabled = !enabled;
+            downBtn.disabled = !enabled;
+        }
+
         // Land read
         function landRead() {
             if (!fallingRead) return;
@@ -816,6 +928,7 @@
             fallingRead = null;
 
             updateDisplay();
+            updateControlButtons();
 
             // Check completion
             if (placedReads === totalReads) {
@@ -860,6 +973,7 @@
                     startFalling();
                 }
             }
+            updateControlButtons();
         }
 
         // Update display
@@ -953,6 +1067,7 @@
         window.onload = () => {
             showMessage('Click "New Game" button to start!', 'info');
             updateStatus('paused');
+            updateControlButtons();
             document.getElementById('pauseBtn').disabled = true;
         };
     </script>
