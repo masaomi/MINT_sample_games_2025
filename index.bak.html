@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polyploid Genome Assembly 🧬</title>
+    <title>DNA Assembly Tetris 🧬</title>
     <style>
         * {
             margin: 0;
@@ -164,63 +164,20 @@
             overflow: hidden;
         }
 
-        .target-sequences {
-            margin-bottom: 15px;
-        }
-
         .target-sequence {
             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            border: 2px solid #1e3c72;
+            border: 2px dashed #1e3c72;
             border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
             text-align: center;
         }
 
-        .target-sequence.homeolog-A1 {
-            border-color: #1565c0;
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        }
-
-        .target-sequence.homeolog-A2 {
-            border-color: #42a5f5;
-            background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%);
-        }
-
-        .target-sequence.homeolog-B1 {
-            border-color: #2e7d32;
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-        }
-
-        .target-sequence.homeolog-B2 {
-            border-color: #66bb6a;
-            background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
-        }
-
         .target-label {
-            font-size: 0.9em;
+            font-size: 0.85em;
+            color: #1e3c72;
             font-weight: bold;
             margin-bottom: 6px;
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            color: white;
-        }
-
-        .target-label.homeolog-A1 {
-            background: #1565c0;
-        }
-
-        .target-label.homeolog-A2 {
-            background: #42a5f5;
-        }
-
-        .target-label.homeolog-B1 {
-            background: #2e7d32;
-        }
-
-        .target-label.homeolog-B2 {
-            background: #66bb6a;
         }
 
         .sequence {
@@ -263,7 +220,7 @@
         }
 
         .assembly-area {
-            height: 350px;
+            height: 420px;
             position: relative;
             border-top: 2px solid #ddd;
             padding-top: 10px;
@@ -284,27 +241,7 @@
 
         .read-block.falling {
             box-shadow: 0 6px 20px rgba(30, 60, 114, 0.5);
-            border: 3px solid #1e3c72;
-        }
-
-        .read-block.falling.homeolog-A1 {
-            border-color: #1565c0;
-            box-shadow: 0 6px 20px rgba(21, 101, 192, 0.5);
-        }
-
-        .read-block.falling.homeolog-A2 {
-            border-color: #42a5f5;
-            box-shadow: 0 6px 20px rgba(66, 165, 245, 0.5);
-        }
-
-        .read-block.falling.homeolog-B1 {
-            border-color: #2e7d32;
-            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);
-        }
-
-        .read-block.falling.homeolog-B2 {
-            border-color: #66bb6a;
-            box-shadow: 0 6px 20px rgba(102, 187, 106, 0.5);
+            border: 2px solid #1e3c72;
         }
 
         .read-block.placed {
@@ -561,28 +498,27 @@
 </head>
 <body>
     <div class="game-container">
-        <h1>🧬 Polyploid Genome Assembly 🧬</h1>
-        <p class="subtitle">Assign Short Reads to the correct Homeolog!</p>
+        <h1>🧬 DNA Assembly Tetris 🧬</h1>
+        <p class="subtitle">Place falling Short Reads in the correct position!</p>
 
         <div class="info-box">
-            <h3>🔬 How to Play - Learn About Homeologs!</h3>
+            <h3>🔬 How to Play</h3>
             <p>
-                <strong>Homeologs</strong> are similar chromosomes from different ancestral genomes in polyploids.
-                Place falling reads on the correct homeolog AND correct position!
-                Use ⬅️➡️ to move left/right, ⬆️⬇️ to switch homeologs, and Spacebar for fast drop.
-                Start with diploid (2 homeologs), then advance to allopolyploid (4 homeologs) at Level 3!
+                Place the falling DNA Short Reads in the correct position to complete the target sequence!
+                Use ⬅️➡️ keys to move left/right, and ⬇️ key for fast drop. Score points by placing them correctly!
             </p>
         </div>
 
         <div class="game-layout">
             <div class="game-board-container">
                 <div class="message info" id="message">
-                    Use ←→ to move, ↑↓ to switch homeologs, Space for fast drop!
+                    Use ←→ to move, ↓ for fast drop!
                 </div>
 
                 <div class="game-board">
-                    <div class="target-sequences" id="targetSequences">
-                        <!-- Homeologs will be displayed here -->
+                    <div class="target-sequence">
+                        <div class="target-label">🎯 Target Sequence (Complete this sequence!)</div>
+                        <div class="sequence" id="targetSequence"></div>
                     </div>
 
                     <div class="assembly-area" id="assemblyArea">
@@ -599,15 +535,9 @@
                 <div class="mobile-controls">
                     <div class="mobile-controls-label">📱 Touch Controls</div>
                     <div class="mobile-controls-row">
-                        <button class="control-btn" id="upBtn" ontouchstart="handleTouchControl('up')" onclick="handleControl('up')">⬆️</button>
-                    </div>
-                    <div class="mobile-controls-row">
                         <button class="control-btn" id="leftBtn" ontouchstart="handleTouchControl('left')" onclick="handleControl('left')">⬅️</button>
-                        <button class="control-btn" id="spaceBtn" ontouchstart="handleTouchControl('space')" onclick="handleControl('space')">⏬</button>
-                        <button class="control-btn" id="rightBtn" ontouchstart="handleTouchControl('right')" onclick="handleControl('right')">➡️</button>
-                    </div>
-                    <div class="mobile-controls-row">
                         <button class="control-btn" id="downBtn" ontouchstart="handleTouchControl('down')" onclick="handleControl('down')">⬇️</button>
+                        <button class="control-btn" id="rightBtn" ontouchstart="handleTouchControl('right')" onclick="handleControl('right')">➡️</button>
                     </div>
                 </div>
             </div>
@@ -646,10 +576,8 @@
                     <h4>🎮 Controls</h4>
                     <p>⬅️ Move left</p>
                     <p>➡️ Move right</p>
-                    <p>⬆️ Switch homeolog up</p>
-                    <p>⬇️ Switch homeolog down</p>
-                    <p>Space Fast drop</p>
-                    <p>P Pause</p>
+                    <p>⬇️ Fast drop</p>
+                    <p>⏸️ Pause</p>
                 </div>
             </div>
         </div>
@@ -678,7 +606,7 @@
         let totalReads = 6;
         let correctPlacements = 0;
         let totalPlacements = 0;
-        let homeologs = []; // Array of homeolog objects {id, name, sequence, color}
+        let targetSequence = [];
         let reads = [];
         let currentReadIndex = 0;
         let fallingRead = null;
@@ -688,7 +616,6 @@
         let gameCompleted = false;
         let fallSpeed = 800; // ms per step
         let fallInterval = null;
-        let isDiploid = true; // Start as diploid, becomes allopolyploid at level 3
 
         // Generate random DNA sequence
         function generateSequence(length) {
@@ -700,92 +627,20 @@
             return sequence;
         }
 
-        // Introduce variations in sequence (SNPs)
-        function introduceVariations(sequence, numVariations) {
-            const bases = ['A', 'T', 'G', 'C'];
-            const newSequence = [...sequence];
-            for (let i = 0; i < numVariations; i++) {
-                const pos = Math.floor(Math.random() * sequence.length);
-                const currentBase = newSequence[pos];
-                const otherBases = bases.filter(b => b !== currentBase);
-                newSequence[pos] = otherBases[Math.floor(Math.random() * otherBases.length)];
-            }
-            return newSequence;
-        }
-
-        // Generate homeologs
-        function generateHomeologs(isDiploid) {
-            const baseSequence = generateSequence(22);
-            const homeologs = [];
-            
-            if (isDiploid) {
-                // Diploid: 2 homeologs from A genome
-                homeologs.push({
-                    id: 'A1',
-                    name: 'Homeolog A1',
-                    sequence: baseSequence,
-                    color: 'homeolog-A1'
-                });
-                homeologs.push({
-                    id: 'A2',
-                    name: 'Homeolog A2',
-                    sequence: introduceVariations(baseSequence, 2),
-                    color: 'homeolog-A2'
-                });
-            } else {
-                // Allopolyploid: 4 homeologs (2 from A genome, 2 from B genome)
-                const bGenomeSequence = introduceVariations(baseSequence, 4);
-                
-                homeologs.push({
-                    id: 'A1',
-                    name: 'Homeolog A1 (A genome)',
-                    sequence: baseSequence,
-                    color: 'homeolog-A1'
-                });
-                homeologs.push({
-                    id: 'A2',
-                    name: 'Homeolog A2 (A genome)',
-                    sequence: introduceVariations(baseSequence, 2),
-                    color: 'homeolog-A2'
-                });
-                homeologs.push({
-                    id: 'B1',
-                    name: 'Homeolog B1 (B genome)',
-                    sequence: bGenomeSequence,
-                    color: 'homeolog-B1'
-                });
-                homeologs.push({
-                    id: 'B2',
-                    name: 'Homeolog B2 (B genome)',
-                    sequence: introduceVariations(bGenomeSequence, 2),
-                    color: 'homeolog-B2'
-                });
-            }
-            
-            return homeologs;
-        }
-
-        // Generate reads from all homeologs
-        function generateReadsFromHomeologs(homeologs, readLength, readsPerHomeolog) {
+        // Generate reads from target sequence
+        function generateReads(sequence, readLength, numReads) {
             const reads = [];
+            const step = Math.floor((sequence.length - readLength) / (numReads - 1));
             
-            homeologs.forEach((homeolog, homeologIndex) => {
-                const sequence = homeolog.sequence;
-                const step = Math.floor((sequence.length - readLength) / (readsPerHomeolog - 1));
-                
-                for (let i = 0; i < readsPerHomeolog; i++) {
-                    const start = Math.min(i * step, sequence.length - readLength);
-                    const read = {
-                        sequence: sequence.slice(start, start + readLength),
-                        correctPosition: start,
-                        correctHomeologIndex: homeologIndex,
-                        homeologId: homeolog.id,
-                        homeologColor: homeolog.color,
-                        placed: false
-                    };
-                    reads.push(read);
-                }
-            });
+            for (let i = 0; i < numReads; i++) {
+                const start = Math.min(i * step, sequence.length - readLength);
+                const read = {
+                    sequence: sequence.slice(start, start + readLength),
+                    correctPosition: start,
+                    placed: false
+                };
+                reads.push(read);
+            }
             
             // Shuffle reads
             return shuffle(reads);
@@ -813,41 +668,13 @@
             });
         }
 
-        // Render all homeologs
-        function renderHomeologs() {
-            const container = document.getElementById('targetSequences');
-            container.innerHTML = '';
-            
-            homeologs.forEach((homeolog, index) => {
-                const homeologDiv = document.createElement('div');
-                homeologDiv.className = `target-sequence ${homeolog.color}`;
-                homeologDiv.dataset.index = index;
-                
-                const labelDiv = document.createElement('div');
-                labelDiv.className = `target-label ${homeolog.color}`;
-                labelDiv.textContent = homeolog.name;
-                
-                const sequenceDiv = document.createElement('div');
-                sequenceDiv.className = 'sequence';
-                homeolog.sequence.forEach(base => {
-                    const baseDiv = document.createElement('div');
-                    baseDiv.className = `base base-${base}`;
-                    baseDiv.textContent = base;
-                    sequenceDiv.appendChild(baseDiv);
-                });
-                
-                homeologDiv.appendChild(labelDiv);
-                homeologDiv.appendChild(sequenceDiv);
-                container.appendChild(homeologDiv);
-            });
-        }
-
         // Initialize game
         function startNewGame() {
             // Reset state
             score = 0;
             level = 1;
             placedReads = 0;
+            totalReads = 6;
             correctPlacements = 0;
             totalPlacements = 0;
             currentReadIndex = 0;
@@ -857,7 +684,6 @@
             gamePaused = false;
             gameCompleted = false;
             fallSpeed = 800;
-            isDiploid = true;
 
             // Clear intervals
             if (fallInterval) {
@@ -865,15 +691,13 @@
                 fallInterval = null;
             }
 
-            // Generate homeologs (start as diploid)
-            homeologs = generateHomeologs(isDiploid);
+            // Generate target sequence (22 bases)
+            targetSequence = generateSequence(22);
             
-            // Generate reads: 3 reads per homeolog for diploid (6 total)
-            const readsPerHomeolog = 3;
-            totalReads = homeologs.length * readsPerHomeolog;
-            reads = generateReadsFromHomeologs(homeologs, 7, readsPerHomeolog);
+            // Generate 6 reads of length 7 with overlaps
+            reads = generateReads(targetSequence, 7, totalReads);
 
-            renderHomeologs();
+            renderSequence(targetSequence, 'targetSequence');
             
             // Clear assembly area
             document.getElementById('assemblyArea').innerHTML = '';
@@ -888,7 +712,7 @@
             updateControlButtons();
             document.getElementById('pauseBtn').disabled = false;
             document.getElementById('pauseBtn').innerHTML = '⏸️ Pause';
-            showMessage('Use ←→ to move, ↑↓ to switch homeologs, Space for fast drop!', 'info');
+            showMessage('Use ←→ to move, ↓ for fast drop!', 'info');
 
             // Start spawning reads
             setTimeout(() => {
@@ -907,15 +731,12 @@
             
             document.getElementById('assemblyArea').appendChild(readElement);
             
-            const sequenceLength = homeologs[0].sequence.length;
-            
             fallingRead = {
                 element: readElement,
                 read: read,
                 index: currentReadIndex,
-                x: Math.floor(sequenceLength / 2) - Math.floor(read.sequence.length / 2),
+                x: Math.floor(targetSequence.length / 2) - Math.floor(read.sequence.length / 2),
                 y: 0,
-                homeologIndex: 0, // Start at first homeolog
                 speed: fallSpeed
             };
 
@@ -940,9 +761,8 @@
         // Create read element
         function createReadElement(read, index) {
             const readDiv = document.createElement('div');
-            readDiv.className = `read-block falling ${read.homeologColor}`;
+            readDiv.className = 'read-block falling';
             readDiv.dataset.index = index;
-            readDiv.dataset.homeologId = read.homeologId;
 
             read.sequence.forEach(base => {
                 const baseDiv = document.createElement('div');
@@ -959,16 +779,8 @@
             if (!fallingRead) return;
             
             const baseWidth = 28;
-            // Calculate horizontal position
-            const xPos = fallingRead.x * baseWidth;
-            
-            // Calculate vertical position based on homeolog index and falling y
-            // Each homeolog occupies about 60px in the target area
-            const homeologOffset = fallingRead.homeologIndex * 60;
-            const yPos = homeologOffset + fallingRead.y;
-            
-            fallingRead.element.style.left = xPos + 'px';
-            fallingRead.element.style.top = yPos + 'px';
+            fallingRead.element.style.left = (fallingRead.x * baseWidth) + 'px';
+            fallingRead.element.style.top = (fallingRead.y) + 'px';
         }
 
         // Start falling
@@ -984,8 +796,8 @@
                 fallingRead.y += 40;
                 updateReadPosition();
 
-                // Check if reached bottom (adjusted for assembly area height)
-                if (fallingRead.y >= 280) {
+                // Check if reached bottom
+                if (fallingRead.y >= 370) {
                     landRead();
                 }
             }, fallingRead.speed);
@@ -993,12 +805,6 @@
 
         // Keyboard controls
         document.addEventListener('keydown', (e) => {
-            // Handle pause separately
-            if (e.key === 'p' || e.key === 'P') {
-                togglePause();
-                return;
-            }
-
             if (!fallingRead || !gameRunning || gamePaused) return;
 
             switch(e.key) {
@@ -1011,29 +817,13 @@
                     break;
                 case 'ArrowRight':
                     e.preventDefault();
-                    const maxX = homeologs[0].sequence.length - fallingRead.read.sequence.length;
+                    const maxX = targetSequence.length - fallingRead.read.sequence.length;
                     if (fallingRead.x < maxX) {
                         fallingRead.x++;
                         updateReadPosition();
                     }
                     break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    // Switch to previous homeolog
-                    if (fallingRead.homeologIndex > 0) {
-                        fallingRead.homeologIndex--;
-                        updateReadPosition();
-                    }
-                    break;
                 case 'ArrowDown':
-                    e.preventDefault();
-                    // Switch to next homeolog
-                    if (fallingRead.homeologIndex < homeologs.length - 1) {
-                        fallingRead.homeologIndex++;
-                        updateReadPosition();
-                    }
-                    break;
-                case ' ':
                     e.preventDefault();
                     // Fast drop
                     if (fallInterval) clearInterval(fallInterval);
@@ -1061,27 +851,13 @@
                     }
                     break;
                 case 'right':
-                    const maxX = homeologs[0].sequence.length - fallingRead.read.sequence.length;
+                    const maxX = targetSequence.length - fallingRead.read.sequence.length;
                     if (fallingRead.x < maxX) {
                         fallingRead.x++;
                         updateReadPosition();
                     }
                     break;
-                case 'up':
-                    // Switch to previous homeolog
-                    if (fallingRead.homeologIndex > 0) {
-                        fallingRead.homeologIndex--;
-                        updateReadPosition();
-                    }
-                    break;
                 case 'down':
-                    // Switch to next homeolog
-                    if (fallingRead.homeologIndex < homeologs.length - 1) {
-                        fallingRead.homeologIndex++;
-                        updateReadPosition();
-                    }
-                    break;
-                case 'space':
                     // Fast drop
                     if (fallInterval) clearInterval(fallInterval);
                     fallingRead.speed = 50;
@@ -1094,17 +870,13 @@
         function updateControlButtons() {
             const leftBtn = document.getElementById('leftBtn');
             const rightBtn = document.getElementById('rightBtn');
-            const upBtn = document.getElementById('upBtn');
             const downBtn = document.getElementById('downBtn');
-            const spaceBtn = document.getElementById('spaceBtn');
             
             const enabled = fallingRead && gameRunning && !gamePaused;
             
             leftBtn.disabled = !enabled;
             rightBtn.disabled = !enabled;
-            upBtn.disabled = !enabled;
             downBtn.disabled = !enabled;
-            spaceBtn.disabled = !enabled;
         }
 
         // Land read
@@ -1116,12 +888,9 @@
             const element = fallingRead.element;
             const read = fallingRead.read;
             const placedX = fallingRead.x;
-            const placedHomeologIndex = fallingRead.homeologIndex;
 
-            // Check if position AND homeolog are correct
-            const isCorrectHomeolog = (placedHomeologIndex === read.correctHomeologIndex);
-            const isCorrectPosition = (placedX === read.correctPosition);
-            const isCorrect = isCorrectHomeolog && isCorrectPosition;
+            // Check if position is correct
+            const isCorrect = (placedX === read.correctPosition);
 
             totalPlacements++;
             
@@ -1133,22 +902,12 @@
                 element.classList.remove('falling');
                 element.classList.add('placed');
                 
-                // Position at the correct homeolog row
-                const homeologOffset = placedHomeologIndex * 60;
-                element.style.top = (homeologOffset + 250) + 'px';
+                // Position at bottom
+                element.style.top = (370 - placedReads * 35) + 'px';
                 read.placed = true;
                 placedReads++;
                 
-                showMessage(`🎉 Perfect! Correctly placed on ${homeologs[placedHomeologIndex].name}! +${points} points`, 'success');
-
-                // Check for polyploidy transition at level 3
-                if (placedReads === 2 && level === 2 && isDiploid) {
-                    // Trigger transition to allopolyploid
-                    setTimeout(() => {
-                        transitionToAllopolyploid();
-                    }, 1500);
-                    return; // Wait for transition before spawning next read
-                }
+                showMessage(`🎉 Perfect! Correctly placed! +${points} points`, 'success');
 
                 // Level up every 2 correct placements
                 if (placedReads % 2 === 0 && level < 5) {
@@ -1162,13 +921,7 @@
                     element.remove();
                 }, 500);
                 
-                if (!isCorrectHomeolog && !isCorrectPosition) {
-                    showMessage(`❌ Wrong homeolog AND position! This read belongs to ${homeologs[read.correctHomeologIndex].name}`, 'error');
-                } else if (!isCorrectHomeolog) {
-                    showMessage(`❌ Wrong homeolog! This read belongs to ${homeologs[read.correctHomeologIndex].name}`, 'error');
-                } else {
-                    showMessage(`❌ Wrong position! Check the correct position on this homeolog`, 'error');
-                }
+                showMessage(`❌ Position is off! Check the correct position`, 'error');
             }
 
             placedReadElements.push(element);
@@ -1199,39 +952,6 @@
                     spawnNextRead();
                 }, 1500);
             }
-        }
-
-        // Transition to Allopolyploid
-        function transitionToAllopolyploid() {
-            isDiploid = false;
-            level = 3;
-            
-            // Show transition message
-            showMessage('🌟 ALLOPOLYPLOIDY EVENT! A and B genomes merge! Now 4 homeologs! 🌟', 'success');
-            
-            // Regenerate homeologs as allopolyploid
-            homeologs = generateHomeologs(isDiploid);
-            
-            // Generate new reads for the allopolyploid state
-            const readsPerHomeolog = 2;
-            const newReads = generateReadsFromHomeologs(homeologs, 7, readsPerHomeolog);
-            
-            // Add new reads to the queue
-            reads = [...reads.slice(currentReadIndex), ...newReads];
-            totalReads = placedReads + reads.length;
-            currentReadIndex = 0;
-            
-            // Re-render homeologs
-            renderHomeologs();
-            
-            updateDisplay();
-            
-            // Continue spawning reads after a delay
-            setTimeout(() => {
-                if (currentReadIndex < reads.length) {
-                    spawnNextRead();
-                }
-            }, 2500);
         }
 
         // Toggle pause
@@ -1292,10 +1012,9 @@
 
             const read = fallingRead.read;
             const correctPos = read.correctPosition;
-            const correctHomeolog = homeologs[read.correctHomeologIndex];
-            const targetBases = correctHomeolog.sequence.slice(correctPos, correctPos + 3).join('');
+            const targetBases = targetSequence.slice(correctPos, correctPos + 3).join('');
             
-            showMessage(`💡 Hint: This read belongs to ${correctHomeolog.name} at position starting with "${targetBases}..." (position ${correctPos + 1})`, 'info');
+            showMessage(`💡 Hint: This read should be at position starting with "${targetBases}..." (position ${correctPos + 1} from left)`, 'info');
         }
 
         // Show message
