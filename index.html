@@ -3,1355 +3,1083 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polyploid Genome Assembly 🧬</title>
+    <title>Genome Assembly Puzzle 🧩</title>
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --bg-color: #ecf0f1;
+            --text-color: #2c3e50;
+            --piece-bg: #ffffff;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             padding: 20px;
-            overflow: hidden;
         }
 
-        .game-container {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            max-width: 1000px;
-            width: 100%;
+        header {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         h1 {
-            text-align: center;
-            color: #1e3c72;
+            font-size: 2.5rem;
+            color: var(--primary-color);
             margin-bottom: 10px;
-            font-size: 2.5em;
         }
 
         .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 1.1em;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            opacity: 0.8;
         }
 
-        .info-box {
-            background: #e3f2fd;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 4px solid #1e3c72;
-        }
-
-        .info-box h3 {
-            color: #1e3c72;
-            margin-bottom: 8px;
-        }
-
-        .info-box p {
-            color: #555;
-            line-height: 1.6;
-            font-size: 0.95em;
-        }
-
-        .game-layout {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .game-board-container {
-            flex: 1;
+        .game-controls {
             display: flex;
             flex-direction: column;
-        }
-
-        .side-panel {
-            width: 220px;
-        }
-
-        .stats {
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .stat-item {
-            margin-bottom: 12px;
-        }
-
-        .stat-label {
-            font-size: 0.85em;
-            color: #666;
-            margin-bottom: 3px;
-        }
-
-        .stat-value {
-            font-size: 1.6em;
-            font-weight: bold;
-            color: #1e3c72;
-        }
-
-        .game-status {
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .status-label {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .status-indicator {
-            font-size: 1.2em;
-            font-weight: bold;
-            padding: 8px;
-            border-radius: 5px;
-        }
-
-        .status-indicator.playing {
-            background: #c8e6c9;
-            color: #2e7d32;
-        }
-
-        .status-indicator.paused {
-            background: #fff9c4;
-            color: #f57f17;
-        }
-
-        .status-indicator.gameover {
-            background: #ffcdd2;
-            color: #c62828;
-        }
-
-        .next-read-container {
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .next-label {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .game-board {
-            background: #fafafa;
-            border: 3px solid #1e3c72;
-            border-radius: 10px;
-            padding: 15px;
-            position: relative;
-            height: 550px;
-            overflow: hidden;
-        }
-
-        .target-sequences {
-            margin-bottom: 15px;
-        }
-
-        .target-sequence {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            border: 2px solid #1e3c72;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-
-        .target-sequence.homeolog-A1 {
-            border-color: #1565c0;
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        }
-
-        .target-sequence.homeolog-A2 {
-            border-color: #42a5f5;
-            background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%);
-        }
-
-        .target-sequence.homeolog-B1 {
-            border-color: #2e7d32;
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-        }
-
-        .target-sequence.homeolog-B2 {
-            border-color: #66bb6a;
-            background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
-        }
-
-        .target-label {
-            font-size: 0.9em;
-            font-weight: bold;
-            margin-bottom: 6px;
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            color: white;
-        }
-
-        .target-label.homeolog-A1 {
-            background: #1565c0;
-        }
-
-        .target-label.homeolog-A2 {
-            background: #42a5f5;
-        }
-
-        .target-label.homeolog-B1 {
-            background: #2e7d32;
-        }
-
-        .target-label.homeolog-B2 {
-            background: #66bb6a;
-        }
-
-        .sequence {
-            display: flex;
-            justify-content: center;
-            gap: 2px;
-            flex-wrap: wrap;
-        }
-
-        .base {
-            width: 26px;
-            height: 26px;
-            display: inline-flex;
-            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
             align-items: center;
+            justify-content: center;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
             font-weight: bold;
-            font-size: 1em;
-            border-radius: 4px;
-            border: 2px solid rgba(0,0,0,0.1);
-        }
-
-        .base-A {
-            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
             color: white;
         }
 
-        .base-T {
-            background: linear-gradient(135deg, #4ECDC4, #70E0D8);
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-start {
+            background-color: var(--accent-color);
+            box-shadow: 0 4px 0 #2980b9;
+            min-width: 120px;
+        }
+
+        .btn-reset {
+            background-color: #e74c3c;
+            box-shadow: 0 4px 0 #c0392b;
+        }
+
+        /* Difficulty Buttons */
+        .difficulty-selector {
+            display: flex;
+            background: white;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .ploidy-selector {
+            display: flex;
+            background: white;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-right: 10px;
+        }
+
+        .btn-diff, .btn-ploidy {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--secondary-color);
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .btn-diff:hover, .btn-ploidy:hover {
+            background-color: #f0f2f5;
+        }
+
+        .btn-diff.active, .btn-ploidy.active {
+            background-color: var(--primary-color);
             color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        .base-G {
-            background: linear-gradient(135deg, #FFD93D, #FFE66D);
-            color: #333;
+        .timer-display {
+            font-size: 2rem;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid var(--primary-color);
+            min-width: 150px;
+            text-align: center;
         }
 
-        .base-C {
-            background: linear-gradient(135deg, #6BCB77, #8BDB89);
-            color: white;
+        .puzzle-container {
+            background: #bdc3c7;
+            /* border-radius: 10px; Remove radius to look more like a desk? keep it for container feel */
+            border-radius: 10px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+            position: relative; /* For absolute positioning of pieces */
+            width: 100%;
+            height: 600px; /* Fixed height for the workspace */
+            overflow: hidden; /* Keep pieces inside */
+            margin-bottom: 30px;
+            user-select: none; /* Prevent selection while dragging */
         }
 
-        .assembly-area {
-            height: 350px;
-            position: relative;
-            border-top: 2px solid #ddd;
-            padding-top: 10px;
-            overflow: hidden;
+        /* Remove row styles */
+        .puzzle-row {
+            display: none; 
         }
 
-        .read-block {
+        .puzzle-piece {
+            background: var(--piece-bg);
+            border: 2px solid var(--secondary-color);
+            border-radius: 5px;
+            cursor: grab;
+            user-select: none;
+            /* position: absolute; Added via JS, but good to know */
             position: absolute;
             display: flex;
-            gap: 2px;
-            padding: 6px;
-            background: white;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: left 0.1s ease;
-            z-index: 10;
-        }
-
-        .read-block.falling {
-            box-shadow: 0 6px 20px rgba(30, 60, 114, 0.5);
-            border: 3px solid #1e3c72;
-        }
-
-        .read-block.falling.homeolog-A1 {
-            border-color: #1565c0;
-            box-shadow: 0 6px 20px rgba(21, 101, 192, 0.5);
-        }
-
-        .read-block.falling.homeolog-A2 {
-            border-color: #42a5f5;
-            box-shadow: 0 6px 20px rgba(66, 165, 245, 0.5);
-        }
-
-        .read-block.falling.homeolog-B1 {
-            border-color: #2e7d32;
-            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);
-        }
-
-        .read-block.falling.homeolog-B2 {
-            border-color: #66bb6a;
-            box-shadow: 0 6px 20px rgba(102, 187, 106, 0.5);
-        }
-
-        .read-block.placed {
-            opacity: 0.85;
-            border: 2px solid #999;
-            z-index: 5;
-        }
-
-        .read-block.correct {
-            animation: pulse 0.5s ease;
-            border: 3px solid #4caf50 !important;
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .read-block.incorrect {
-            animation: shake 0.5s ease;
-            border: 3px solid #f44336 !important;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
-
-        .controls {
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 15px;
-        }
-
-        .controls h4 {
-            color: #1e3c72;
-            margin-bottom: 10px;
-            font-size: 1em;
-        }
-
-        .controls p {
-            font-size: 0.85em;
-            color: #666;
-            line-height: 1.5;
-            margin: 3px 0;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .mobile-controls {
-            display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
-
-        .mobile-controls-label {
-            font-size: 0.9em;
-            color: #666;
+            justify-content: center;
+            font-size: 0.8rem;
             font-weight: bold;
-            margin-bottom: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            min-width: 80px;
+            height: 60px;
+            z-index: 10;
+            transition: box-shadow 0.2s, transform 0.1s; /* Remove transform transition for smooth drag */
         }
 
-        .mobile-controls-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+        .puzzle-piece.dragging {
+            cursor: grabbing;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            z-index: 1000; /* Bring to front */
+            opacity: 0.9;
+        }
+        
+        /* Remove old connection styles, we will handle connections differently or keep visual cues */
+        .puzzle-piece.connected-right {
+            border-right: none; /* Remove border to look seamless */
+        }
+        
+        .puzzle-piece.connected-left {
+            border-left: none;
+        }
+        
+        /* Add a connector visual between pieces? */
+        .puzzle-piece::after {
+            /* ... old style ... */
+            display: none;
         }
 
-        .control-btn {
-            width: 70px;
-            height: 70px;
-            font-size: 2em;
-            border: 3px solid #1e3c72;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-            color: #1e3c72;
+        /* Connected group styling */
+        .puzzle-piece[data-group] {
+            /* maybe highlight? */
+            transition: box-shadow 0.2s;
+        }
+
+        .seq-overlap {
+            color: #d35400;
+            background-color: #fce5cd;
+            font-weight: 900;
+            padding: 2px 4px;
+            border-radius: 4px;
+            border-bottom: 2px solid #e67e22;
+        }
+        
+        .seq-core {
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0 2px;
+        }
+
+        .ranking-container {
             background: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
         }
 
-        .control-btn:active:not(:disabled) {
-            transform: scale(0.95);
-            background: #e3f2fd;
-        }
-
-        .control-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        button {
-            padding: 12px 20px;
-            font-size: 1em;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            color: white;
-            flex: 1;
-            min-width: 140px;
-        }
-
-        .btn-new-game {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        }
-
-        .btn-pause {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-        }
-
-        .btn-hint {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .message {
+        .ranking-title {
             text-align: center;
-            font-size: 1em;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ranking-table th, .ranking-table td {
             padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .ranking-table th {
+            background-color: #f8f9fa;
             font-weight: bold;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: var(--secondary-color);
         }
 
-        .message.success {
-            background: #d4edda;
-            color: #155724;
+        .ranking-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .empty-rank {
+            text-align: center;
+            color: #95a5a6;
+            padding: 20px;
+            font-style: italic;
         }
 
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .completion-modal {
+        /* Modal */
+        .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
         }
 
-        .completion-modal.show {
+        .modal.show {
             display: flex;
         }
 
         .modal-content {
             background: white;
-            padding: 40px;
-            border-radius: 20px;
+            padding: 30px;
+            border-radius: 15px;
             text-align: center;
             max-width: 500px;
-            animation: modalAppear 0.5s ease;
+            width: 90%;
+            animation: popIn 0.3s ease;
         }
 
-        @keyframes modalAppear {
-            from {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
-        .modal-content h2 {
-            color: #1e3c72;
-            font-size: 2.5em;
-            margin-bottom: 20px;
+        .modal h2 {
+            color: var(--success-color);
+            font-size: 2rem;
+            margin-bottom: 15px;
         }
 
-        .modal-content .trophy {
-            font-size: 5em;
-            margin-bottom: 20px;
+        .modal-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 20px 0;
         }
-
-        .modal-stats {
-            background: #e3f2fd;
-            padding: 20px;
-            border-radius: 10px;
+        
+        .input-group {
             margin: 20px 0;
         }
 
-        .modal-stats p {
-            font-size: 1.2em;
-            margin: 10px 0;
-            color: #555;
+        .input-group input {
+            padding: 10px;
+            font-size: 1.1rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 80%;
         }
 
-        @media (max-width: 768px) {
-            .game-layout {
-                flex-direction: column;
+        /* Responsive */
+        @media (max-width: 600px) {
+            .puzzle-piece {
+                font-size: 0.6rem;
             }
-
-            .side-panel {
-                width: 100%;
-            }
-
             h1 {
-                font-size: 1.8em;
-            }
-
-            .base {
-                width: 22px;
-                height: 22px;
-                font-size: 0.9em;
+                font-size: 1.8rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>🧬 Polyploid Genome Assembly 🧬</h1>
-        <p class="subtitle">Assign Short Reads to the correct Homeolog!</p>
 
-        <div class="info-box">
-            <h3>🔬 How to Play - Learn About Homeologs!</h3>
-            <p>
-                <strong>Homeologs</strong> are similar chromosomes from different ancestral genomes in polyploids.
-                Place falling reads on the correct homeolog AND correct position!
-                Use ⬅️➡️ to move left/right, ⬆️⬇️ to switch homeologs, and Spacebar for fast drop.
-                Start with diploid (2 homeologs), then advance to allopolyploid (4 homeologs) at Level 3!
-            </p>
-        </div>
+    <header>
+        <h1>Genome Assembly Puzzle 🧩</h1>
+        <p class="subtitle">Reconstruct the genome sequence by ordering the fragments!</p>
+    </header>
 
-        <div class="game-layout">
-            <div class="game-board-container">
-                <div class="message info" id="message">
-                    Use ←→ to move, ↑↓ to switch homeologs, Space for fast drop!
+    <div class="game-controls">
+        <div class="control-row">
+            <div class="ploidy-selector" id="ploidySelector">
+                <button class="btn-ploidy active" data-ploidy="1">Haploid (1)</button>
+                <button class="btn-ploidy" data-ploidy="2">Polyploid (2)</button>
+                </div>
+            <div class="difficulty-selector" id="difficultySelector">
+                <button class="btn-diff" data-level="easy">Easy</button>
+                <button class="btn-diff active" data-level="medium">Medium</button>
+                <button class="btn-diff" data-level="hard">Hard</button>
+                <button class="btn-diff" data-level="expert">Expert</button>
+                    </div>
+                    </div>
+        <div class="control-row">
+            <div class="timer-display" id="timer">00:00.000</div>
+            <button id="startBtn" class="btn btn-start">Start Game</button>
+            <button id="stopBtn" class="btn btn-reset" style="display:none;">Stop</button>
+                </div>
+        <!-- <button id="resetBtn" class="btn btn-reset">Reset</button> -->
                 </div>
 
-                <div class="game-board">
-                    <div class="target-sequences" id="targetSequences">
-                        <!-- Homeologs will be displayed here -->
-                    </div>
-
-                    <div class="assembly-area" id="assemblyArea">
-                        <!-- Reads will fall here -->
-                    </div>
-                </div>
-
-                <div class="buttons">
-                    <button class="btn-new-game" onclick="startNewGame()">🎮 New Game</button>
-                    <button class="btn-pause" id="pauseBtn" onclick="togglePause()">⏸️ Pause</button>
-                    <button class="btn-hint" onclick="showHint()">💡 Hint</button>
-                </div>
-
-                <div class="mobile-controls">
-                    <div class="mobile-controls-label">📱 Touch Controls</div>
-                    <div class="mobile-controls-row">
-                        <button class="control-btn" id="upBtn" ontouchstart="handleTouchControl('up')" onclick="handleControl('up')">⬆️</button>
-                    </div>
-                    <div class="mobile-controls-row">
-                        <button class="control-btn" id="leftBtn" ontouchstart="handleTouchControl('left')" onclick="handleControl('left')">⬅️</button>
-                        <button class="control-btn" id="spaceBtn" ontouchstart="handleTouchControl('space')" onclick="handleControl('space')">⏬</button>
-                        <button class="control-btn" id="rightBtn" ontouchstart="handleTouchControl('right')" onclick="handleControl('right')">➡️</button>
-                    </div>
-                    <div class="mobile-controls-row">
-                        <button class="control-btn" id="downBtn" ontouchstart="handleTouchControl('down')" onclick="handleControl('down')">⬇️</button>
-                    </div>
+    <div class="puzzle-container" id="puzzleBoard">
+        <!-- Pieces will be generated here -->
+        <div style="text-align: center; color: #7f8c8d; width: 100%; padding: 40px;">
+            <p style="font-size: 1.2em; margin-bottom: 10px;"><strong>How to Play:</strong></p>
+            <p>1. Click "Start Game" to begin.</p>
+            <p>2. <strong>Drag and Drop</strong> pieces to reorder them.</p>
+            <p>3. <strong>Match the orange text!</strong> The end of one piece matches the start of the next.</p>
+            <p>4. A 🔗 icon will appear when pieces are correctly connected.</p>
                 </div>
             </div>
 
-            <div class="side-panel">
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Score</div>
-                        <div class="stat-value" id="score">0</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Placed</div>
-                        <div class="stat-value" id="placed">0/6</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Accuracy</div>
-                        <div class="stat-value" id="accuracy">100%</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Level</div>
-                        <div class="stat-value" id="level">1</div>
-                    </div>
+    <div class="ranking-container">
+        <h2 class="ranking-title">🏆 Local Rankings</h2>
+        <table class="ranking-table" id="rankingTable">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Time</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="rankingBody">
+                <!-- Ranking rows -->
+            </tbody>
+        </table>
                 </div>
 
-                <div class="game-status">
-                    <div class="status-label">Game Status</div>
-                    <div class="status-indicator playing" id="statusIndicator">Playing</div>
-                </div>
-
-                <div class="next-read-container">
-                    <div class="next-label">📋 Next Read</div>
-                    <div class="sequence" id="nextRead"></div>
-                </div>
-
-                <div class="controls">
-                    <h4>🎮 Controls</h4>
-                    <p>⬅️ Move left</p>
-                    <p>➡️ Move right</p>
-                    <p>⬆️ Switch homeolog up</p>
-                    <p>⬇️ Switch homeolog down</p>
-                    <p>Space Fast drop</p>
-                    <p>P Pause</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="completion-modal" id="completionModal">
+    <!-- Victory Modal -->
+    <div class="modal" id="victoryModal">
         <div class="modal-content">
-            <div class="trophy">🏆</div>
-            <h2 id="modalTitle">Assembly Complete!</h2>
-            <p id="modalMessage">You placed all Short Reads!</p>
-            <div class="modal-stats">
-                <p>🌟 Final Score: <strong id="finalScore">0</strong></p>
-                <p>🎯 Accuracy: <strong id="finalAccuracy">100%</strong></p>
-                <p>📊 Level Reached: <strong id="finalLevel">1</strong></p>
-                <p>⭐ Rating: <strong id="rating">Perfect!</strong></p>
-            </div>
-            <button class="btn-new-game" onclick="closeModalAndStartNew()">Play Again</button>
+            <h2>🎉 Assembly Complete!</h2>
+            <p>You successfully reconstructed the genome!</p>
+            <div class="modal-score" id="finalTime">00:00.000</div>
+            
+            <div class="input-group" id="nameInputGroup">
+                <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+                </div>
+
+            <button id="saveScoreBtn" class="btn btn-start">Save Score & Play Again</button>
+            <button id="closeModalBtn" class="btn btn-reset" style="margin-top: 10px;">Close</button>
         </div>
     </div>
 
     <script>
-        // Game state
-        let score = 0;
-        let level = 1;
-        let placedReads = 0;
-        let totalReads = 6;
-        let correctPlacements = 0;
-        let totalPlacements = 0;
-        let homeologs = []; // Array of homeolog objects {id, name, sequence, color}
-        let reads = [];
-        let currentReadIndex = 0;
-        let fallingRead = null;
-        let placedReadElements = [];
-        let gameRunning = false;
-        let gamePaused = false;
-        let gameCompleted = false;
-        let fallSpeed = 800; // ms per step
-        let fallInterval = null;
-        let isDiploid = true; // Start as diploid, becomes allopolyploid at level 3
+        // Game Configuration
+        const CONFIG = {
+            easy: { pieces: 5, rows: 1, length: 20, overlap: 2 },
+            medium: { pieces: 10, rows: 2, length: 40, overlap: 3 },
+            hard: { pieces: 20, rows: 4, length: 80, overlap: 3 },
+            expert: { pieces: 50, rows: 5, length: 200, overlap: 4 }
+        };
 
-        // Generate random DNA sequence
-        function generateSequence(length) {
+        class Game {
+            constructor() {
+                this.pieces = [];
+                this.isPlaying = false;
+                this.startTime = 0;
+                this.timerInterval = null;
+                this.currentDifficulty = 'medium';
+                this.currentPloidy = 1; // 1 = Haploid, 2 = Diploid (Polyploid)
+                
+                // For drag logic
+                this.draggedPiece = null;
+                this.dragOffsetX = 0;
+                this.dragOffsetY = 0;
+                this.isDragging = false;
+
+                // DOM Elements
+                this.board = document.getElementById('puzzleBoard');
+                this.timerDisplay = document.getElementById('timer');
+                this.startBtn = document.getElementById('startBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.difficultySelector = document.getElementById('difficultySelector');
+                this.difficultyButtons = this.difficultySelector.querySelectorAll('.btn-diff');
+                this.ploidySelector = document.getElementById('ploidySelector');
+                this.ploidyButtons = this.ploidySelector.querySelectorAll('.btn-ploidy');
+                this.rankingBody = document.getElementById('rankingBody');
+                this.victoryModal = document.getElementById('victoryModal');
+                this.finalTimeDisplay = document.getElementById('finalTime');
+                this.saveScoreBtn = document.getElementById('saveScoreBtn');
+                this.playerNameInput = document.getElementById('playerName');
+                this.closeModalBtn = document.getElementById('closeModalBtn');
+
+                // Bind events
+                this.startBtn.addEventListener('click', () => this.start());
+                this.stopBtn.addEventListener('click', () => this.stop());
+                
+                // Board events for drag
+                this.board.addEventListener('mousedown', (e) => this.onMouseDown(e));
+                window.addEventListener('mousemove', (e) => this.onMouseMove(e));
+                window.addEventListener('mouseup', (e) => this.onMouseUp(e));
+                
+                // Touch events
+                this.board.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
+                window.addEventListener('touchmove', (e) => this.onTouchMove(e), {passive: false});
+                window.addEventListener('touchend', (e) => this.onTouchEnd(e));
+
+                // Difficulty buttons logic
+                this.difficultyButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (this.isPlaying) return; 
+                        this.setDifficulty(btn.dataset.level);
+                    });
+                });
+
+                // Ploidy buttons logic
+                this.ploidyButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (this.isPlaying) return;
+                        this.setPloidy(parseInt(btn.dataset.ploidy));
+                    });
+                });
+
+                this.saveScoreBtn.addEventListener('click', () => this.saveScore());
+                this.closeModalBtn.addEventListener('click', () => this.victoryModal.classList.remove('show'));
+
+                // Load rankings
+                this.updateRankingDisplay();
+            }
+            
+            setDifficulty(level) {
+                this.currentDifficulty = level;
+                this.difficultyButtons.forEach(btn => {
+                    if (btn.dataset.level === level) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                this.updateRankingDisplay(); // Update table immediately
+            }
+
+            setPloidy(ploidy) {
+                this.currentPloidy = ploidy;
+                this.ploidyButtons.forEach(btn => {
+                    if (parseInt(btn.dataset.ploidy) === ploidy) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                this.updateRankingDisplay(); // Update table immediately
+            }
+
+            stop() {
+                this.isPlaying = false;
+                this.stopTimer();
+                this.startBtn.style.display = 'inline-block';
+                this.stopBtn.style.display = 'none';
+                this.startBtn.textContent = 'Start Game';
+                
+                // Clear board
+                this.pieces = [];
+                this.renderBoard();
+                
+                // Re-enable controls
+                this.toggleControls(true);
+                
+                // Reset Timer Display
+                this.timerDisplay.textContent = '00:00.000';
+            }
+            
+            toggleControls(enable) {
+                // Enable/Disable Difficulty Buttons
+                this.difficultyButtons.forEach(btn => {
+                    btn.style.pointerEvents = enable ? 'auto' : 'none';
+                    btn.style.opacity = enable ? '1' : '0.6';
+                });
+                
+                // Enable/Disable Ploidy Buttons
+                this.ploidyButtons.forEach(btn => {
+                    btn.style.pointerEvents = enable ? 'auto' : 'none';
+                    btn.style.opacity = enable ? '1' : '0.6';
+                });
+            }
+
+            generateSequence(length) {
             const bases = ['A', 'T', 'G', 'C'];
-            const sequence = [];
+                let seq = '';
             for (let i = 0; i < length; i++) {
-                sequence.push(bases[Math.floor(Math.random() * bases.length)]);
-            }
-            return sequence;
-        }
-
-        // Introduce variations in sequence (SNPs)
-        function introduceVariations(sequence, numVariations) {
-            const bases = ['A', 'T', 'G', 'C'];
-            const newSequence = [...sequence];
-            for (let i = 0; i < numVariations; i++) {
-                const pos = Math.floor(Math.random() * sequence.length);
-                const currentBase = newSequence[pos];
-                const otherBases = bases.filter(b => b !== currentBase);
-                newSequence[pos] = otherBases[Math.floor(Math.random() * otherBases.length)];
-            }
-            return newSequence;
-        }
-
-        // Generate homeologs
-        function generateHomeologs(isDiploid) {
-            const baseSequence = generateSequence(22);
-            const homeologs = [];
-            
-            if (isDiploid) {
-                // Diploid: 2 homeologs from A genome
-                homeologs.push({
-                    id: 'A1',
-                    name: 'Homeolog A1',
-                    sequence: baseSequence,
-                    color: 'homeolog-A1'
-                });
-                homeologs.push({
-                    id: 'A2',
-                    name: 'Homeolog A2',
-                    sequence: introduceVariations(baseSequence, 2),
-                    color: 'homeolog-A2'
-                });
-            } else {
-                // Allopolyploid: 4 homeologs (2 from A genome, 2 from B genome)
-                const bGenomeSequence = introduceVariations(baseSequence, 4);
-                
-                homeologs.push({
-                    id: 'A1',
-                    name: 'Homeolog A1 (A genome)',
-                    sequence: baseSequence,
-                    color: 'homeolog-A1'
-                });
-                homeologs.push({
-                    id: 'A2',
-                    name: 'Homeolog A2 (A genome)',
-                    sequence: introduceVariations(baseSequence, 2),
-                    color: 'homeolog-A2'
-                });
-                homeologs.push({
-                    id: 'B1',
-                    name: 'Homeolog B1 (B genome)',
-                    sequence: bGenomeSequence,
-                    color: 'homeolog-B1'
-                });
-                homeologs.push({
-                    id: 'B2',
-                    name: 'Homeolog B2 (B genome)',
-                    sequence: introduceVariations(bGenomeSequence, 2),
-                    color: 'homeolog-B2'
-                });
-            }
-            
-            return homeologs;
-        }
-
-        // Generate reads from all homeologs
-        function generateReadsFromHomeologs(homeologs, readLength, readsPerHomeolog) {
-            const reads = [];
-            
-            homeologs.forEach((homeolog, homeologIndex) => {
-                const sequence = homeolog.sequence;
-                const step = Math.floor((sequence.length - readLength) / (readsPerHomeolog - 1));
-                
-                for (let i = 0; i < readsPerHomeolog; i++) {
-                    const start = Math.min(i * step, sequence.length - readLength);
-                    const read = {
-                        sequence: sequence.slice(start, start + readLength),
-                        correctPosition: start,
-                        correctHomeologIndex: homeologIndex,
-                        homeologId: homeolog.id,
-                        homeologColor: homeolog.color,
-                        placed: false
-                    };
-                    reads.push(read);
+                    seq += bases[Math.floor(Math.random() * bases.length)];
                 }
-            });
-            
-            // Shuffle reads
-            return shuffle(reads);
-        }
-
-        // Shuffle array
-        function shuffle(array) {
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                return seq;
             }
-            return newArray;
-        }
 
-        // Render sequence
-        function renderSequence(sequence, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            sequence.forEach(base => {
-                const baseDiv = document.createElement('div');
-                baseDiv.className = `base base-${base}`;
-                baseDiv.textContent = base;
-                container.appendChild(baseDiv);
-            });
-        }
+            start() {
+                if (this.isPlaying) {
+                    this.stop(); 
+                }
+                
+                const config = CONFIG[this.currentDifficulty];
+                this.isPlaying = true;
+                this.startBtn.style.display = 'none';
+                this.stopBtn.style.display = 'inline-block';
+                
+                this.pieces = [];
+                
+                // Disable controls while playing
+                this.toggleControls(false);
+                
+                try {
+                    // Generate full sequence
+                    const uniquePerPiece = Math.floor(config.length / config.pieces);
+                    const totalLength = (uniquePerPiece * config.pieces) + config.overlap;
+                    
+                    // Generate base sequence
+                    const baseSequence = this.generateSequence(totalLength);
 
-        // Render all homeologs
-        function renderHomeologs() {
-            const container = document.getElementById('targetSequences');
-            container.innerHTML = '';
-            
-            homeologs.forEach((homeolog, index) => {
-                const homeologDiv = document.createElement('div');
-                homeologDiv.className = `target-sequence ${homeolog.color}`;
-                homeologDiv.dataset.index = index;
+                    // Board dimensions
+                    const boardRect = this.board.getBoundingClientRect();
+                    // Ensure valid dimensions
+                    const boardW = (boardRect.width > 100) ? boardRect.width : 800;
+                    const boardH = (boardRect.height > 100) ? boardRect.height : 600;
+                    
+                    for (let h = 0; h < this.currentPloidy; h++) {
+                        let homeologSequence = baseSequence;
+                        
+                        if (h > 0) {
+                            // Introduce variations for subsequent homeologs
+                            homeologSequence = this.introduceVariations(baseSequence, 5 + config.pieces);
+                        }
+
+                        this.generatePiecesForHomeolog(homeologSequence, h, config, uniquePerPiece, boardW, boardH);
+                    }
+
+                    this.renderBoard();
+                    this.startTimer();
+                } catch (e) {
+                    console.error("Game start error:", e);
+                    this.stop();
+                }
+            }
+
+            introduceVariations(sequence, count) {
+                const bases = ['A', 'T', 'G', 'C'];
+                let seqArr = sequence.split('');
+                for (let i = 0; i < count; i++) {
+                    const pos = Math.floor(Math.random() * seqArr.length);
+                    const current = seqArr[pos];
+                    let next = bases[Math.floor(Math.random() * bases.length)];
+                    while (next === current) {
+                        next = bases[Math.floor(Math.random() * bases.length)];
+                    }
+                    seqArr[pos] = next;
+                }
+                return seqArr.join('');
+            }
+
+            generatePiecesForHomeolog(sequence, homeologIndex, config, uniquePerPiece, boardW, boardH) {
+                const fullSequence = sequence;
                 
-                const labelDiv = document.createElement('div');
-                labelDiv.className = `target-label ${homeolog.color}`;
-                labelDiv.textContent = homeolog.name;
+                for (let i = 0; i < config.pieces; i++) {
+                    const start = i * uniquePerPiece;
+                    let end = start + uniquePerPiece + config.overlap;
+                    if (i === config.pieces - 1) end = fullSequence.length;
+                    if (end > fullSequence.length) end = fullSequence.length;
+
+                    const chunk = fullSequence.substring(start, end);
+                    
+                    const overlapStart = (i > 0) ? chunk.substring(0, config.overlap) : '';
+                    const overlapEnd = (i < config.pieces - 1) ? chunk.substring(chunk.length - config.overlap) : '';
+                    
+                    let core = chunk;
+                    if (i > 0) core = core.substring(config.overlap);
+                    if (i < config.pieces - 1) core = core.substring(0, core.length - config.overlap);
+
+                    // Color based on homeolog index to help distinguish slightly?
+                    // Or purely position based?
+                    // Let's give a slight tint difference
+                    // Base hue 0-270. 
+                    // Homeolog 1: Normal
+                    // Homeolog 2: Shift hue by 180? Or use different saturation?
+                    
+                    let hue = Math.floor((i / (config.pieces - 1)) * 270);
+                    
+                    // Tint for homeologs
+                    // H1: Normal rainbow
+                    // H2: +30 offset? Or maybe different lightness
+                    if (homeologIndex === 1) {
+                        hue = (hue + 180) % 360; // Distinct color set
+                    }
+
+                    const color = `hsl(${hue}, ${homeologIndex === 0 ? '70%' : '60%'}, ${homeologIndex === 0 ? '60%' : '50%'})`;
+
+                    // Random Position
+                    const randX = Math.random() * (boardW - 150);
+                    const randY = Math.random() * (boardH - 100);
+                    
+                    // Unique ID across all pieces: (homeologIndex * 1000) + i
+                    const globalId = (homeologIndex * 1000) + i;
+                    const groupId = globalId; // Initially distinct
+
+                    this.pieces.push({
+                        id: i, // Relative ID in sequence
+                        globalId: globalId,
+                        homeolog: homeologIndex,
+                        fullText: chunk,
+                        overlapStart: overlapStart,
+                        overlapEnd: overlapEnd,
+                        core: core,
+                        color: color,
+                        x: randX,
+                        y: randY,
+                        width: 0,
+                        height: 0,
+                        groupId: groupId,
+                        element: null
+                    });
+                }
+            }
+
+            shuffle(array) {
+                // No longer needed for absolute positioning logic, we just randomize coords
+            }
+
+            renderBoard() {
+                this.board.innerHTML = '';
                 
-                const sequenceDiv = document.createElement('div');
-                sequenceDiv.className = 'sequence';
-                homeolog.sequence.forEach(base => {
-                    const baseDiv = document.createElement('div');
-                    baseDiv.className = `base base-${base}`;
-                    baseDiv.textContent = base;
-                    sequenceDiv.appendChild(baseDiv);
+                // Just loop through pieces and create them
+                this.pieces.forEach((piece, index) => {
+                    const el = document.createElement('div');
+                    el.className = 'puzzle-piece';
+                    el.dataset.index = index; 
+                    
+                    // Set initial position
+                    el.style.left = piece.x + 'px';
+                    el.style.top = piece.y + 'px';
+
+                    // Visual styling
+                    el.style.width = 'auto';
+                    el.style.minWidth = '60px';
+                    el.style.height = '60px'; // slightly smaller for better fit
+                    
+                    const hint = document.createElement('div');
+                    hint.className = 'piece-hint';
+                    hint.style.backgroundColor = piece.color;
+                    el.appendChild(hint);
+
+                    const content = document.createElement('div');
+                    content.className = 'piece-content';
+                    
+                    let html = '';
+                    if (piece.overlapStart) html += `<span class="seq-overlap">${piece.overlapStart}</span>`;
+                    html += `<span class="seq-core">${piece.core}</span>`;
+                    if (piece.overlapEnd) html += `<span class="seq-overlap">${piece.overlapEnd}</span>`;
+                    
+                    content.innerHTML = html;
+                    el.appendChild(content);
+
+                    this.board.appendChild(el);
+                    piece.element = el;
+
+                    // Get dimensions after append
+                    const rect = el.getBoundingClientRect();
+                    piece.width = rect.width;
+                    piece.height = rect.height;
                 });
+            }
+
+            // --- Mouse / Touch Handling ---
+
+            onMouseDown(e) {
+                if (!this.isPlaying) return;
+                const target = e.target.closest('.puzzle-piece');
+                if (!target) return;
+
+                    e.preventDefault();
+                const index = parseInt(target.dataset.index);
+                this.startDrag(index, e.clientX, e.clientY);
+            }
+
+            onTouchStart(e) {
+                if (!this.isPlaying) return;
+                const target = e.target.closest('.puzzle-piece');
+                if (!target) return;
+
+                // e.preventDefault(); // Don't prevent default here to allow scrolling if needed? Actually we want to prevent scroll on pieces
+                if (e.touches.length === 1) {
+                    e.preventDefault();
+                    const index = parseInt(target.dataset.index);
+                    this.startDrag(index, e.touches[0].clientX, e.touches[0].clientY);
+                }
+            }
+
+            startDrag(index, clientX, clientY) {
+                this.draggedPiece = this.pieces[index];
+                this.isDragging = true;
                 
-                homeologDiv.appendChild(labelDiv);
-                homeologDiv.appendChild(sequenceDiv);
-                container.appendChild(homeologDiv);
-            });
-        }
+                // Calculate offset from the piece's top-left
+                const rect = this.draggedPiece.element.getBoundingClientRect();
+                this.dragOffsetX = clientX - rect.left;
+                this.dragOffsetY = clientY - rect.top;
 
-        // Initialize game
-        function startNewGame() {
-            // Reset state
-            score = 0;
-            level = 1;
-            placedReads = 0;
-            correctPlacements = 0;
-            totalPlacements = 0;
-            currentReadIndex = 0;
-            fallingRead = null;
-            placedReadElements = [];
-            gameRunning = true;
-            gamePaused = false;
-            gameCompleted = false;
-            fallSpeed = 800;
-            isDiploid = true;
-
-            // Clear intervals
-            if (fallInterval) {
-                clearInterval(fallInterval);
-                fallInterval = null;
+                // Bring group to front
+                this.bringGroupToFront(this.draggedPiece.groupId);
+                this.draggedPiece.element.classList.add('dragging');
             }
 
-            // Generate homeologs (start as diploid)
-            homeologs = generateHomeologs(isDiploid);
-            
-            // Generate reads: 3 reads per homeolog for diploid (6 total)
-            const readsPerHomeolog = 3;
-            totalReads = homeologs.length * readsPerHomeolog;
-            reads = generateReadsFromHomeologs(homeologs, 7, readsPerHomeolog);
+            onMouseMove(e) {
+                if (!this.isDragging || !this.draggedPiece) return;
+                    e.preventDefault();
+                this.updateDrag(e.clientX, e.clientY);
+                    }
 
-            renderHomeologs();
-            
-            // Clear assembly area
-            document.getElementById('assemblyArea').innerHTML = '';
-            
-            // Show first read in next read preview
-            if (reads.length > 0) {
-                renderSequence(reads[0].sequence, 'nextRead');
+            onTouchMove(e) {
+                if (!this.isDragging || !this.draggedPiece) return;
+                    e.preventDefault();
+                this.updateDrag(e.touches[0].clientX, e.touches[0].clientY);
             }
 
-            updateDisplay();
-            updateStatus('playing');
-            updateControlButtons();
-            document.getElementById('pauseBtn').disabled = false;
-            document.getElementById('pauseBtn').innerHTML = '⏸️ Pause';
-            showMessage('Use ←→ to move, ↑↓ to switch homeologs, Space for fast drop!', 'info');
+            updateDrag(clientX, clientY) {
+                // Calculate new position for the dragged piece
+                // Relative to board container
+                const boardRect = this.board.getBoundingClientRect();
+                let newX = clientX - boardRect.left - this.dragOffsetX;
+                let newY = clientY - boardRect.top - this.dragOffsetY;
 
-            // Start spawning reads
-            setTimeout(() => {
-                spawnNextRead();
-            }, 1000);
-        }
+                // Constrain to board
+                // newX = Math.max(0, Math.min(newX, boardRect.width - this.draggedPiece.width));
+                // newY = Math.max(0, Math.min(newY, boardRect.height - this.draggedPiece.height));
 
-        // Spawn next read
-        function spawnNextRead() {
-            if (!gameRunning || gamePaused || gameCompleted) return;
-            if (currentReadIndex >= reads.length) return;
-            if (fallingRead) return;
+                // Move the entire group
+                const dx = newX - this.draggedPiece.x;
+                const dy = newY - this.draggedPiece.y;
 
-            const read = reads[currentReadIndex];
-            const readElement = createReadElement(read, currentReadIndex);
-            
-            document.getElementById('assemblyArea').appendChild(readElement);
-            
-            const sequenceLength = homeologs[0].sequence.length;
-            
-            fallingRead = {
-                element: readElement,
-                read: read,
-                index: currentReadIndex,
-                x: Math.floor(sequenceLength / 2) - Math.floor(read.sequence.length / 2),
-                y: 0,
-                homeologIndex: 0, // Start at first homeolog
-                speed: fallSpeed
-            };
-
-            updateReadPosition();
-
-            currentReadIndex++;
-            
-            // Show next read preview
-            if (currentReadIndex < reads.length) {
-                renderSequence(reads[currentReadIndex].sequence, 'nextRead');
-            } else {
-                document.getElementById('nextRead').innerHTML = '<p style="text-align: center; color: #999; font-size: 0.9em;">Last Read</p>';
+                this.moveGroup(this.draggedPiece.groupId, dx, dy);
             }
 
-            // Update control buttons
-            updateControlButtons();
+            moveGroup(groupId, dx, dy) {
+                this.pieces.forEach(p => {
+                    if (p.groupId === groupId) {
+                        p.x += dx;
+                        p.y += dy;
+                        p.element.style.left = p.x + 'px';
+                        p.element.style.top = p.y + 'px';
+                    }
+                });
+            }
 
-            // Start falling
-            startFalling();
-        }
+            onMouseUp(e) {
+                if (this.isDragging) {
+                    this.endDrag();
+                }
+            }
 
-        // Create read element
-        function createReadElement(read, index) {
-            const readDiv = document.createElement('div');
-            readDiv.className = `read-block falling ${read.homeologColor}`;
-            readDiv.dataset.index = index;
-            readDiv.dataset.homeologId = read.homeologId;
+            onTouchEnd(e) {
+                if (this.isDragging) {
+                    this.endDrag();
+                }
+            }
 
-            read.sequence.forEach(base => {
-                const baseDiv = document.createElement('div');
-                baseDiv.className = `base base-${base}`;
-                baseDiv.textContent = base;
-                readDiv.appendChild(baseDiv);
-            });
+            endDrag() {
+                if (!this.draggedPiece) return;
+                
+                this.draggedPiece.element.classList.remove('dragging');
+                
+                // Check for snapping
+                this.checkSnapping(this.draggedPiece.groupId);
+                
+                this.isDragging = false;
+                this.draggedPiece = null;
+                
+                this.checkWin();
+            }
 
-            return readDiv;
-        }
+            bringGroupToFront(groupId) {
+                // Find max z-index
+                // Simple approach: just increment a global z-index or set high
+                this.pieces.forEach(p => {
+                    if (p.groupId === groupId) {
+                        p.element.style.zIndex = 100;
+                    } else {
+                        p.element.style.zIndex = 10;
+                    }
+                });
+            }
 
-        // Update read position
-        function updateReadPosition() {
-            if (!fallingRead) return;
-            
-            const baseWidth = 28;
-            // Calculate horizontal position
-            const xPos = fallingRead.x * baseWidth;
-            
-            // Calculate vertical position based on homeolog index and falling y
-            // Each homeolog occupies about 60px in the target area
-            const homeologOffset = fallingRead.homeologIndex * 60;
-            const yPos = homeologOffset + fallingRead.y;
-            
-            fallingRead.element.style.left = xPos + 'px';
-            fallingRead.element.style.top = yPos + 'px';
-        }
+            checkSnapping(activeGroupId) {
+                const SNAP_DISTANCE = 30; // px
+                
+                // Get all pieces in the active group
+                const activePieces = this.pieces.filter(p => p.groupId === activeGroupId);
+                
+                let snapped = false;
 
-        // Start falling
-        function startFalling() {
-            if (fallInterval) clearInterval(fallInterval);
-            
-            fallInterval = setInterval(() => {
-                if (!gameRunning || gamePaused || !fallingRead) {
-                    clearInterval(fallInterval);
+                // Try to snap any piece in the active group to any piece NOT in the group
+                for (const activeP of activePieces) {
+                    // Look for Neighbors: ID-1 (Left) or ID+1 (Right)
+                    // MUST also match HOMEOLOG index!
+                    
+                    // Check Left Neighbor (activeP.id - 1)
+                    if (activeP.id > 0) {
+                        // Find the piece with id - 1 AND same homeolog
+                        const leftNeighbor = this.pieces.find(p => p.homeolog === activeP.homeolog && p.id === activeP.id - 1);
+                        
+                        if (leftNeighbor && leftNeighbor.groupId !== activeGroupId) {
+                            // Check distance
+                            const targetX = leftNeighbor.x + leftNeighbor.width - 10;
+                            const targetY = leftNeighbor.y;
+                            
+                            const dist = Math.hypot(activeP.x - targetX, activeP.y - targetY);
+                            
+                            if (dist < SNAP_DISTANCE) {
+                                const dx = targetX - activeP.x;
+                                const dy = targetY - activeP.y;
+                                this.moveGroup(activeGroupId, dx, dy);
+                                this.mergeGroups(leftNeighbor.groupId, activeGroupId);
+                                snapped = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Check Right Neighbor (activeP.id + 1)
+                    // Find piece with id + 1 AND same homeolog
+                    // Max ID is config.pieces - 1
+                    // Since config isn't stored in class directly, check if neighbor exists
+                    const rightNeighbor = this.pieces.find(p => p.homeolog === activeP.homeolog && p.id === activeP.id + 1);
+                    
+                    if (rightNeighbor && rightNeighbor.groupId !== activeGroupId) {
+                         const targetX = rightNeighbor.x - activeP.width + 10;
+                         const targetY = rightNeighbor.y;
+                         
+                         const dist = Math.hypot(activeP.x - targetX, activeP.y - targetY);
+                         
+                         if (dist < SNAP_DISTANCE) {
+                             const dx = targetX - activeP.x;
+                             const dy = targetY - activeP.y;
+                             this.moveGroup(activeGroupId, dx, dy);
+                             this.mergeGroups(rightNeighbor.groupId, activeGroupId);
+                             snapped = true;
+                             break;
+                         }
+                    }
+                }
+                
+                // Play sound or visual effect if snapped?
+                if (snapped) {
+                    // highlight?
+                }
+            }
+
+            mergeGroups(targetGroupId, sourceGroupId) {
+                this.pieces.forEach(p => {
+                    if (p.groupId === sourceGroupId) {
+                        p.groupId = targetGroupId;
+                        
+                        // Add flash effect
+                        p.element.style.transition = 'none';
+                        p.element.style.borderColor = '#2ecc71';
+                setTimeout(() => {
+                            p.element.style.transition = 'box-shadow 0.2s';
+                            p.element.style.borderColor = ''; // Reset to css default
+                        }, 300);
+                    }
+                });
+            }
+
+            checkWin() {
+                // Win condition:
+                // For each homeolog, all pieces must be in ONE group.
+                // And that group should contain ONLY pieces from that homeolog? 
+                // Actually, if we enforce correct connection (same homeolog, consecutive ID), 
+                // then a "completed" state is just when we have exactly `currentPloidy` groups remaining,
+                // and each group consists of all pieces for one homeolog.
+                
+                // Let's count groups.
+                const groups = new Set(this.pieces.map(p => p.groupId));
+                
+                if (groups.size === this.currentPloidy) {
+                    // Potential win. Check if each group is complete.
+                    const config = CONFIG[this.currentDifficulty];
+                    const piecesPerHomeolog = config.pieces;
+                    
+                    // Check sizes of groups
+                    let allComplete = true;
+                    
+                    // Map group ID to count
+                    const groupCounts = {};
+                    this.pieces.forEach(p => {
+                        groupCounts[p.groupId] = (groupCounts[p.groupId] || 0) + 1;
+                    });
+                    
+                    for (let gid in groupCounts) {
+                        if (groupCounts[gid] !== piecesPerHomeolog) {
+                            allComplete = false;
+                            break;
+                        }
+                    }
+                    
+                    if (allComplete) {
+                        this.gameWin();
+                    }
+                }
+            }
+
+            startTimer() {
+                this.startTime = Date.now();
+                this.timerInterval = setInterval(() => {
+                    this.updateTimerDisplay();
+                }, 10);
+            }
+
+            stopTimer() {
+                clearInterval(this.timerInterval);
+            }
+
+            updateTimerDisplay() {
+                const now = Date.now();
+                const diff = now - this.startTime;
+                this.timerDisplay.textContent = this.formatTime(diff);
+            }
+
+            formatTime(ms) {
+                const minutes = Math.floor(ms / 60000);
+                const seconds = Math.floor((ms % 60000) / 1000);
+                const milliseconds = ms % 1000;
+                return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+            }
+
+            gameWin() {
+                this.isPlaying = false;
+                this.stopTimer();
+                const finalTime = Date.now() - this.startTime;
+                this.currentFinalTime = finalTime; // Store for saving
+                
+                // Show modal
+                this.finalTimeDisplay.textContent = this.formatTime(finalTime);
+                this.victoryModal.classList.add('show');
+                
+                // Focus input
+                setTimeout(() => this.playerNameInput.focus(), 100);
+            }
+
+            saveScore() {
+                const name = this.playerNameInput.value.trim() || 'Anonymous';
+                const scoreData = {
+                    name: name,
+                    time: this.currentFinalTime,
+                    formattedTime: this.formatTime(this.currentFinalTime),
+                    difficulty: this.currentDifficulty,
+                    ploidy: this.currentPloidy, // Save ploidy
+                    date: new Date().toLocaleDateString()
+                };
+
+                // Get existing scores
+                let scores = JSON.parse(localStorage.getItem('genomePuzzleScores') || '[]');
+                scores.push(scoreData);
+                
+                // Sort by time (ascending) - Global sort? 
+                // Actually we just store all, and filter on display. But we might want to limit storage size?
+                // Let's just sort by time and maybe keep top 100 globally for now to avoid data loss
+                scores.sort((a, b) => a.time - b.time);
+                
+                // Limit to 100 most recent best times globally to prevent storage overflow
+                if (scores.length > 100) scores = scores.slice(0, 100);
+
+                localStorage.setItem('genomePuzzleScores', JSON.stringify(scores));
+                
+                this.updateRankingDisplay();
+                this.victoryModal.classList.remove('show');
+                this.playerNameInput.value = '';
+            }
+
+            updateRankingDisplay() {
+                const scores = JSON.parse(localStorage.getItem('genomePuzzleScores') || '[]');
+                this.rankingBody.innerHTML = '';
+                
+                // Filter scores based on current difficulty AND ploidy
+                const filteredScores = scores.filter(s => 
+                    s.difficulty === this.currentDifficulty && 
+                    (s.ploidy === this.currentPloidy || (this.currentPloidy === 1 && !s.ploidy)) // Handle backward compatibility for old scores (assume ploidy 1)
+                );
+
+                // Re-sort filtered (just in case)
+                filteredScores.sort((a, b) => a.time - b.time);
+                
+                // Take top 10 for display
+                const topScores = filteredScores.slice(0, 10);
+
+                if (topScores.length === 0) {
+                    this.rankingBody.innerHTML = '<tr><td colspan="4" class="empty-rank">No records for this mode. Be the first!</td></tr>';
                     return;
                 }
 
-                fallingRead.y += 40;
-                updateReadPosition();
+                topScores.forEach((score, index) => {
+                    const tr = document.createElement('tr');
+                    const ploidyLabel = (score.ploidy === 2) ? 'Polyploid' : 'Haploid';
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${this.escapeHtml(score.name)} <span style="font-size:0.8em; color:#7f8c8d">(${ploidyLabel})</span></td>
+                        <td>${score.formattedTime}</td>
+                        <td>${score.date}</td>
+                    `;
+                    this.rankingBody.appendChild(tr);
+                });
+            }
 
-                // Check if reached bottom (adjusted for assembly area height)
-                if (fallingRead.y >= 280) {
-                    landRead();
-                }
-            }, fallingRead.speed);
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
         }
 
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => {
-            // Handle pause separately
-            if (e.key === 'p' || e.key === 'P') {
-                togglePause();
-                return;
-            }
-
-            if (!fallingRead || !gameRunning || gamePaused) return;
-
-            switch(e.key) {
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    if (fallingRead.x > 0) {
-                        fallingRead.x--;
-                        updateReadPosition();
-                    }
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    const maxX = homeologs[0].sequence.length - fallingRead.read.sequence.length;
-                    if (fallingRead.x < maxX) {
-                        fallingRead.x++;
-                        updateReadPosition();
-                    }
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    // Switch to previous homeolog
-                    if (fallingRead.homeologIndex > 0) {
-                        fallingRead.homeologIndex--;
-                        updateReadPosition();
-                    }
-                    break;
-                case 'ArrowDown':
-                    e.preventDefault();
-                    // Switch to next homeolog
-                    if (fallingRead.homeologIndex < homeologs.length - 1) {
-                        fallingRead.homeologIndex++;
-                        updateReadPosition();
-                    }
-                    break;
-                case ' ':
-                    e.preventDefault();
-                    // Fast drop
-                    if (fallInterval) clearInterval(fallInterval);
-                    fallingRead.speed = 50;
-                    startFalling();
-                    break;
-            }
+        // Initialize game
+        window.addEventListener('DOMContentLoaded', () => {
+            const game = new Game();
         });
 
-        // Handle touch control (prevent default and handle immediately)
-        function handleTouchControl(direction) {
-            event.preventDefault();
-            handleControl(direction);
-        }
-
-        // Handle control button clicks
-        function handleControl(direction) {
-            if (!fallingRead || !gameRunning || gamePaused) return;
-
-            switch(direction) {
-                case 'left':
-                    if (fallingRead.x > 0) {
-                        fallingRead.x--;
-                        updateReadPosition();
-                    }
-                    break;
-                case 'right':
-                    const maxX = homeologs[0].sequence.length - fallingRead.read.sequence.length;
-                    if (fallingRead.x < maxX) {
-                        fallingRead.x++;
-                        updateReadPosition();
-                    }
-                    break;
-                case 'up':
-                    // Switch to previous homeolog
-                    if (fallingRead.homeologIndex > 0) {
-                        fallingRead.homeologIndex--;
-                        updateReadPosition();
-                    }
-                    break;
-                case 'down':
-                    // Switch to next homeolog
-                    if (fallingRead.homeologIndex < homeologs.length - 1) {
-                        fallingRead.homeologIndex++;
-                        updateReadPosition();
-                    }
-                    break;
-                case 'space':
-                    // Fast drop
-                    if (fallInterval) clearInterval(fallInterval);
-                    fallingRead.speed = 50;
-                    startFalling();
-                    break;
-            }
-        }
-
-        // Update control buttons state
-        function updateControlButtons() {
-            const leftBtn = document.getElementById('leftBtn');
-            const rightBtn = document.getElementById('rightBtn');
-            const upBtn = document.getElementById('upBtn');
-            const downBtn = document.getElementById('downBtn');
-            const spaceBtn = document.getElementById('spaceBtn');
-            
-            const enabled = fallingRead && gameRunning && !gamePaused;
-            
-            leftBtn.disabled = !enabled;
-            rightBtn.disabled = !enabled;
-            upBtn.disabled = !enabled;
-            downBtn.disabled = !enabled;
-            spaceBtn.disabled = !enabled;
-        }
-
-        // Land read
-        function landRead() {
-            if (!fallingRead) return;
-
-            clearInterval(fallInterval);
-
-            const element = fallingRead.element;
-            const read = fallingRead.read;
-            const placedX = fallingRead.x;
-            const placedHomeologIndex = fallingRead.homeologIndex;
-
-            // Check if position AND homeolog are correct
-            const isCorrectHomeolog = (placedHomeologIndex === read.correctHomeologIndex);
-            const isCorrectPosition = (placedX === read.correctPosition);
-            const isCorrect = isCorrectHomeolog && isCorrectPosition;
-
-            totalPlacements++;
-            
-            if (isCorrect) {
-                correctPlacements++;
-                const points = 100 * level;
-                score += points;
-                element.classList.add('correct');
-                element.classList.remove('falling');
-                element.classList.add('placed');
-                
-                // Position at the correct homeolog row
-                const homeologOffset = placedHomeologIndex * 60;
-                element.style.top = (homeologOffset + 250) + 'px';
-                read.placed = true;
-                placedReads++;
-                
-                showMessage(`🎉 Perfect! Correctly placed on ${homeologs[placedHomeologIndex].name}! +${points} points`, 'success');
-
-                // Check for polyploidy transition at level 3
-                if (placedReads === 2 && level === 2 && isDiploid) {
-                    // Trigger transition to allopolyploid
-                    setTimeout(() => {
-                        transitionToAllopolyploid();
-                    }, 1500);
-                    return; // Wait for transition before spawning next read
-                }
-
-                // Level up every 2 correct placements
-                if (placedReads % 2 === 0 && level < 5) {
-                    level++;
-                    fallSpeed = Math.max(300, fallSpeed - 150);
-                    showMessage(`🎊 Level Up! Level ${level}`, 'success');
-                }
-            } else {
-                element.classList.add('incorrect');
-                setTimeout(() => {
-                    element.remove();
-                }, 500);
-                
-                if (!isCorrectHomeolog && !isCorrectPosition) {
-                    showMessage(`❌ Wrong homeolog AND position! This read belongs to ${homeologs[read.correctHomeologIndex].name}`, 'error');
-                } else if (!isCorrectHomeolog) {
-                    showMessage(`❌ Wrong homeolog! This read belongs to ${homeologs[read.correctHomeologIndex].name}`, 'error');
-                } else {
-                    showMessage(`❌ Wrong position! Check the correct position on this homeolog`, 'error');
-                }
-            }
-
-            placedReadElements.push(element);
-            fallingRead = null;
-
-            updateDisplay();
-            updateControlButtons();
-
-            // Check completion
-            if (placedReads === totalReads) {
-                setTimeout(() => {
-                    gameCompleted = true;
-                    gameRunning = false;
-                    updateStatus('gameover');
-                    showCompletionModal(true);
-                }, 1000);
-            } else if (currentReadIndex >= reads.length && !fallingRead) {
-                // All reads dropped but not all placed correctly
-                setTimeout(() => {
-                    gameCompleted = true;
-                    gameRunning = false;
-                    updateStatus('gameover');
-                    showCompletionModal(false);
-                }, 1000);
-            } else {
-                // Spawn next read
-                setTimeout(() => {
-                    spawnNextRead();
-                }, 1500);
-            }
-        }
-
-        // Transition to Allopolyploid
-        function transitionToAllopolyploid() {
-            isDiploid = false;
-            level = 3;
-            
-            // Show transition message
-            showMessage('🌟 ALLOPOLYPLOIDY EVENT! A and B genomes merge! Now 4 homeologs! 🌟', 'success');
-            
-            // Regenerate homeologs as allopolyploid
-            homeologs = generateHomeologs(isDiploid);
-            
-            // Generate new reads for the allopolyploid state
-            const readsPerHomeolog = 2;
-            const newReads = generateReadsFromHomeologs(homeologs, 7, readsPerHomeolog);
-            
-            // Add new reads to the queue
-            reads = [...reads.slice(currentReadIndex), ...newReads];
-            totalReads = placedReads + reads.length;
-            currentReadIndex = 0;
-            
-            // Re-render homeologs
-            renderHomeologs();
-            
-            updateDisplay();
-            
-            // Continue spawning reads after a delay
-            setTimeout(() => {
-                if (currentReadIndex < reads.length) {
-                    spawnNextRead();
-                }
-            }, 2500);
-        }
-
-        // Toggle pause
-        function togglePause() {
-            if (!gameRunning || gameCompleted) return;
-
-            gamePaused = !gamePaused;
-
-            if (gamePaused) {
-                if (fallInterval) clearInterval(fallInterval);
-                updateStatus('paused');
-                document.getElementById('pauseBtn').innerHTML = '▶️ Resume';
-                showMessage('⏸️ Game Paused', 'info');
-            } else {
-                updateStatus('playing');
-                document.getElementById('pauseBtn').innerHTML = '⏸️ Pause';
-                showMessage('Game Resumed!', 'info');
-                if (fallingRead) {
-                    startFalling();
-                }
-            }
-            updateControlButtons();
-        }
-
-        // Update display
-        function updateDisplay() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('placed').textContent = `${placedReads}/${totalReads}`;
-            document.getElementById('level').textContent = level;
-            const accuracy = totalPlacements > 0 ? Math.round((correctPlacements / totalPlacements) * 100) : 100;
-            document.getElementById('accuracy').textContent = accuracy + '%';
-        }
-
-        // Update status
-        function updateStatus(status) {
-            const indicator = document.getElementById('statusIndicator');
-            indicator.className = `status-indicator ${status}`;
-            
-            switch(status) {
-                case 'playing':
-                    indicator.textContent = 'Playing';
-                    break;
-                case 'paused':
-                    indicator.textContent = 'Paused';
-                    break;
-                case 'gameover':
-                    indicator.textContent = 'Game Over';
-                    break;
-            }
-        }
-
-        // Show hint
-        function showHint() {
-            if (!fallingRead) {
-                showMessage('💡 Wait for the next read to fall', 'info');
-                return;
-            }
-
-            const read = fallingRead.read;
-            const correctPos = read.correctPosition;
-            const correctHomeolog = homeologs[read.correctHomeologIndex];
-            const targetBases = correctHomeolog.sequence.slice(correctPos, correctPos + 3).join('');
-            
-            showMessage(`💡 Hint: This read belongs to ${correctHomeolog.name} at position starting with "${targetBases}..." (position ${correctPos + 1})`, 'info');
-        }
-
-        // Show message
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-        }
-
-        // Show completion modal
-        function showCompletionModal(success) {
-            const modal = document.getElementById('completionModal');
-            
-            if (success) {
-                document.getElementById('modalTitle').textContent = 'Assembly Complete!';
-                document.getElementById('modalMessage').textContent = 'You placed all Short Reads correctly!';
-                document.querySelector('.trophy').textContent = '🏆';
-            } else {
-                document.getElementById('modalTitle').textContent = 'Game Over';
-                document.getElementById('modalMessage').textContent = 'Some reads were not placed correctly';
-                document.querySelector('.trophy').textContent = '😅';
-            }
-            
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('finalLevel').textContent = level;
-            
-            const accuracy = totalPlacements > 0 ? Math.round((correctPlacements / totalPlacements) * 100) : 0;
-            document.getElementById('finalAccuracy').textContent = accuracy + '%';
-            
-            let rating = 'Good Try!';
-            if (success && accuracy === 100) {
-                rating = 'Perfect! 🌟 Flawless Victory!';
-            } else if (accuracy >= 80) {
-                rating = 'Excellent! ⭐';
-            } else if (accuracy >= 60) {
-                rating = 'Well Done!';
-            }
-            document.getElementById('rating').textContent = rating;
-            
-            modal.classList.add('show');
-        }
-
-        // Close modal and start new game
-        function closeModalAndStartNew() {
-            document.getElementById('completionModal').classList.remove('show');
-            startNewGame();
-        }
-
-        // Initialize game on load
-        window.onload = () => {
-            showMessage('Click "New Game" button to start!', 'info');
-            updateStatus('paused');
-            updateControlButtons();
-            document.getElementById('pauseBtn').disabled = true;
-        };
     </script>
 </body>
 </html>
-
