@@ -340,6 +340,9 @@
             }
         }
     </style>
+    <!-- Firebase SDK (for cloud scores on Vercel) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -381,7 +384,8 @@
             </div>
 
     <div class="ranking-container">
-        <h2 class="ranking-title">🏆 Local Rankings</h2>
+        <h2 class="ranking-title" id="rankingTitle">🏆 Local Rankings</h2>
+        <p id="rankingMode" style="text-align: center; font-size: 0.9em; color: #7f8c8d; margin-bottom: 10px;"></p>
         <table class="ranking-table" id="rankingTable">
             <thead>
                 <tr>
@@ -414,6 +418,122 @@
     </div>
 
     <script>
+        // ============================================
+        // Firebase Configuration
+        // ============================================
+        // IMPORTANT: Replace these values with your Firebase project settings
+        // Get these from: Firebase Console > Project Settings > General > Your apps > Web app
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyDNjZr7bJFiq50A2LNhp5m3aqBUJX1Dzdk",
+            authDomain: "mint-sample-games-2025.firebaseapp.com",
+            databaseURL: "https://mint-sample-games-2025-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "mint-sample-games-2025",
+            storageBucket: "mint-sample-games-2025.firebasestorage.app",
+            messagingSenderId: "730624731504",
+            appId: "1:730624731504:web:5cad65bf3c91bcf2dd47b5"
+        };
+
+        // Cloud Storage Manager
+        class CloudStorage {
+            constructor() {
+                this.enabled = false;
+                this.db = null;
+                this.init();
+            }
+
+            // Check if we should enable cloud features
+            isCloudEnvironment() {
+                const hostname = window.location.hostname;
+                // Enable cloud on Vercel deployments or custom domains (not localhost/file/github.io)
+                const isVercel = hostname.includes('.vercel.app');
+                const isCustomDomain = !hostname.includes('localhost') && 
+                                       !hostname.includes('127.0.0.1') &&
+                                       !hostname.includes('.github.io') &&
+                                       hostname !== '' && // file:// protocol
+                                       !hostname.includes('file:');
+                
+                // Check if Firebase config is properly set
+                const isConfigured = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" &&
+                                     FIREBASE_CONFIG.projectId !== "YOUR_PROJECT_ID";
+                
+                return (isVercel || isCustomDomain) && isConfigured;
+            }
+
+            init() {
+                if (!this.isCloudEnvironment()) {
+                    console.log('☁️ Cloud storage disabled (local environment or unconfigured)');
+                    this.enabled = false;
+                    return;
+                }
+
+                try {
+                    firebase.initializeApp(FIREBASE_CONFIG);
+                    this.db = firebase.database();
+                    this.enabled = true;
+                    console.log('☁️ Cloud storage enabled (Firebase)');
+                } catch (error) {
+                    console.error('Firebase initialization failed:', error);
+                    this.enabled = false;
+                }
+            }
+
+            async saveScore(scoreData) {
+                if (!this.enabled || !this.db) return false;
+                
+                try {
+                    await this.db.ref('scores').push({
+                        ...scoreData,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    return true;
+                } catch (error) {
+                    console.error('Cloud save failed:', error);
+                    return false;
+                }
+            }
+
+            loadScores(difficulty, ploidy, callback) {
+                if (!this.enabled || !this.db) {
+                    callback([]);
+                    return;
+                }
+
+                // Load all scores and filter client-side (Firebase free tier has limited querying)
+                this.db.ref('scores')
+                    .orderByChild('time')
+                    .limitToFirst(500)
+                    .on('value', snapshot => {
+                        const data = snapshot.val();
+                        if (!data) {
+                            callback([]);
+                            return;
+                        }
+
+                        // Convert to array and filter
+                        const scores = Object.values(data)
+                            .filter(s => s.difficulty === difficulty && 
+                                        (s.ploidy === ploidy || (ploidy === 1 && !s.ploidy)))
+                            .sort((a, b) => a.time - b.time)
+                            .slice(0, 10);
+
+                        callback(scores);
+                    }, error => {
+                        console.error('Cloud load failed:', error);
+                        callback([]);
+                    });
+            }
+
+            // Detach listener when not needed
+            detachListener() {
+                if (this.db) {
+                    this.db.ref('scores').off();
+                }
+            }
+        }
+
+        // Initialize cloud storage
+        const cloudStorage = new CloudStorage();
+
         // Game Configuration
         const CONFIG = {
             easy: { pieces: 5, rows: 1, length: 20, overlap: 2 },
@@ -447,6 +567,8 @@
                 this.ploidySelector = document.getElementById('ploidySelector');
                 this.ploidyButtons = this.ploidySelector.querySelectorAll('.btn-ploidy');
                 this.rankingBody = document.getElementById('rankingBody');
+                this.rankingTitle = document.getElementById('rankingTitle');
+                this.rankingMode = document.getElementById('rankingMode');
                 this.victoryModal = document.getElementById('victoryModal');
                 this.finalTimeDisplay = document.getElementById('finalTime');
                 this.saveScoreBtn = document.getElementById('saveScoreBtn');
@@ -1004,53 +1126,86 @@
                 setTimeout(() => this.playerNameInput.focus(), 100);
             }
 
-            saveScore() {
+            async saveScore() {
                 const name = this.playerNameInput.value.trim() || 'Anonymous';
                 const scoreData = {
                     name: name,
                     time: this.currentFinalTime,
                     formattedTime: this.formatTime(this.currentFinalTime),
                     difficulty: this.currentDifficulty,
-                    ploidy: this.currentPloidy, // Save ploidy
+                    ploidy: this.currentPloidy,
                     date: new Date().toLocaleDateString()
                 };
 
-                // Get existing scores
-                let scores = JSON.parse(localStorage.getItem('genomePuzzleScores') || '[]');
-                scores.push(scoreData);
-                
-                // Sort by time (ascending) - Global sort? 
-                // Actually we just store all, and filter on display. But we might want to limit storage size?
-                // Let's just sort by time and maybe keep top 100 globally for now to avoid data loss
-                scores.sort((a, b) => a.time - b.time);
-                
-                // Limit to 100 most recent best times globally to prevent storage overflow
-                if (scores.length > 100) scores = scores.slice(0, 100);
+                // Always save to localStorage (as backup / offline)
+                this.saveToLocalStorage(scoreData);
 
-                localStorage.setItem('genomePuzzleScores', JSON.stringify(scores));
+                // Try to save to cloud if enabled
+                if (cloudStorage.enabled) {
+                    const cloudSaved = await cloudStorage.saveScore(scoreData);
+                    if (cloudSaved) {
+                        console.log('✅ Score saved to cloud');
+                    } else {
+                        console.log('⚠️ Cloud save failed, score saved locally only');
+                    }
+                }
                 
                 this.updateRankingDisplay();
                 this.victoryModal.classList.remove('show');
                 this.playerNameInput.value = '';
             }
 
+            saveToLocalStorage(scoreData) {
+                let scores = JSON.parse(localStorage.getItem('genomePuzzleScores') || '[]');
+                scores.push(scoreData);
+                scores.sort((a, b) => a.time - b.time);
+                
+                // Limit to 100 scores to prevent storage overflow
+                if (scores.length > 100) scores = scores.slice(0, 100);
+
+                localStorage.setItem('genomePuzzleScores', JSON.stringify(scores));
+            }
+
             updateRankingDisplay() {
+                // Update title and mode indicator based on cloud status
+                if (cloudStorage.enabled) {
+                    this.rankingTitle.textContent = '🌐 Global Rankings';
+                    this.rankingMode.textContent = '☁️ Cloud mode - Scores shared with all players';
+                    this.rankingMode.style.color = '#27ae60';
+                    
+                    // Load from cloud
+                    cloudStorage.loadScores(this.currentDifficulty, this.currentPloidy, (scores) => {
+                        this.renderScores(scores);
+                    });
+                } else {
+                    this.rankingTitle.textContent = '🏆 Local Rankings';
+                    this.rankingMode.textContent = '💾 Local mode - Scores saved on this device only';
+                    this.rankingMode.style.color = '#7f8c8d';
+                    
+                    // Load from localStorage
+                    const localScores = this.getLocalScores();
+                    this.renderScores(localScores);
+                }
+            }
+
+            getLocalScores() {
                 const scores = JSON.parse(localStorage.getItem('genomePuzzleScores') || '[]');
-                this.rankingBody.innerHTML = '';
                 
                 // Filter scores based on current difficulty AND ploidy
                 const filteredScores = scores.filter(s => 
                     s.difficulty === this.currentDifficulty && 
-                    (s.ploidy === this.currentPloidy || (this.currentPloidy === 1 && !s.ploidy)) // Handle backward compatibility for old scores (assume ploidy 1)
+                    (s.ploidy === this.currentPloidy || (this.currentPloidy === 1 && !s.ploidy))
                 );
 
-                // Re-sort filtered (just in case)
+                // Sort and take top 10
                 filteredScores.sort((a, b) => a.time - b.time);
-                
-                // Take top 10 for display
-                const topScores = filteredScores.slice(0, 10);
+                return filteredScores.slice(0, 10);
+            }
 
-                if (topScores.length === 0) {
+            renderScores(topScores) {
+                this.rankingBody.innerHTML = '';
+
+                if (!topScores || topScores.length === 0) {
                     this.rankingBody.innerHTML = '<tr><td colspan="4" class="empty-rank">No records for this mode. Be the first!</td></tr>';
                     return;
                 }
